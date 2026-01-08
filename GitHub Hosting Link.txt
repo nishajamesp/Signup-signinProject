@@ -1,2 +1,2 @@
-GitHub :  https://github.com/nishajamesp/grade_calculator_project.git
-GitHub Hosting Link: https://nishajamesp.github.io/grade_calculator_project/
+GitHub :  https://github.com/nishajamesp/JSAssignment3.git
+GitHub Hosting Link: https://nishajamesp.github.io/JSAssignment2/

@@ -1,101 +1,114 @@
-let display = document.getElementById('display');
-        let operationDisplay = document.getElementById('operation');
-        let firstOperand = null;
-        let operator = null;
-        let waitingForSecond = false;
+ 
+        const taskInput = document.getElementById('taskInput');
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        const taskList = document.getElementById('taskList');
 
-        function inputDigit(digit) {
-            if (waitingForSecond) {
-                display.value = digit;
-                waitingForSecond = false;
-            } else {
-                display.value = display.value === '0' ? digit : display.value + digit;
-            }
-        }
+        // Function to create a new task item
+        function createTaskElement(taskText) {
+            const li = document.createElement('li');
+            li.className = 'task-item';
 
-        function inputDecimal() {
-            if (waitingForSecond) {
-                display.value = '0.';
-                waitingForSecond = false;
-            } else if (display.value.indexOf('.') === -1) {
-                display.value += '.';
-            }
-        }
-
-        function clearDisplay() {
-            display.value = '0';
-            firstOperand = null;
-            operator = null;
-            waitingForSecond = false;
-            operationDisplay.textContent = '';
-        }
-
-        function setOperator(op) {
-            const inputValue = parseFloat(display.value);
-
-            if (firstOperand === null) {
-                firstOperand = inputValue;
-            } else if (operator) {
-                const result = performCalculation(firstOperand, inputValue, operator);
-                display.value = result;
-                firstOperand = result;
-            }
-
-            waitingForSecond = true;
-            operator = op;
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'task-checkbox';
             
-            let opSymbol = op;
-            if (op === '*') opSymbol = '×';
-            if (op === '/') opSymbol = '÷';
-            if (op === '-') opSymbol = '−';
-            
-            operationDisplay.textContent = firstOperand + ' ' + opSymbol;
+            const taskSpan = document.createElement('span');
+            taskSpan.className = 'task-text';
+            taskSpan.textContent = taskText;
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'btn-delete';
+            deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete';
+
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    li.classList.add('completed');
+                    taskSpan.classList.add('completed');
+                } else {
+                    li.classList.remove('completed');
+                    taskSpan.classList.remove('completed');
+                }
+            });
+
+
+            taskSpan.addEventListener('click', function() {
+                checkbox.checked = !checkbox.checked;
+                checkbox.dispatchEvent(new Event('change'));
+            });
+
+
+            deleteBtn.addEventListener('click', function() {
+                li.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(() => {
+                    li.remove();
+                    checkEmptyState();
+                }, 300);
+            });
+
+
+            li.appendChild(checkbox);
+            li.appendChild(taskSpan);
+            li.appendChild(deleteBtn);
+
+            return li;
         }
 
-        function performCalculation(first, second, op) {
-            switch (op) {
-                case '+':
-                    return first + second;
-                case '-':
-                    return first - second;
-                case '*':
-                    return first * second;
-                case '/':
-                    return second !== 0 ? first / second : 'Error';
-                default:
-                    return second;
+        // Function to add a new task
+        function addTask() {
+            const taskText = taskInput.value.trim();
+
+            if (taskText === '') {
+                alert('Please enter a task!');
+                return;
+            }
+
+            const emptyState = taskList.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+
+            const taskElement = createTaskElement(taskText);
+            taskList.appendChild(taskElement);
+
+
+            taskInput.value = '';
+            taskInput.focus();
+        }
+
+        // Function to check if list is empty and show empty state
+        function checkEmptyState() {
+            if (taskList.children.length === 0) {
+                const emptyDiv = document.createElement('div');
+                emptyDiv.className = 'empty-state';
+                emptyDiv.innerHTML = `
+                    <i class="fas fa-clipboard-list"></i>
+                    <p>No tasks yet. Add one to get started!</p>
+                `;
+                taskList.appendChild(emptyDiv);
             }
         }
 
-        function calculate() {
-            const inputValue = parseFloat(display.value);
-            
-            if (firstOperand !== null && operator) {
-                const result = performCalculation(firstOperand, inputValue, operator);
-                display.value = result;
-                operationDisplay.textContent = '';
-                firstOperand = null;
-                operator = null;
-                waitingForSecond = true;
+        // Event listener for Add Task button
+        addTaskBtn.addEventListener('click', addTask);
+
+        taskInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                addTask();
             }
-        }
+        });
 
-        function calculateSquare() {
-            const value = parseFloat(display.value);
-            const result = value * value;
-            display.value = result;
-            operationDisplay.textContent = '';
-            firstOperand = null;
-            operator = null;
-            waitingForSecond = true;
-        }
-
-        function calculateCube() {
-            const value = parseFloat(display.value);
-            const result = value * value * value;
-            display.value = result;
-            operationDisplay.textContent = '';
-            firstOperand = null;
-            operator = null;
-            waitingForSecond = true;
-        }
+        // Add fade out animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeOut {
+                from {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+                to {
+                    opacity: 0;
+                    transform: translateX(50px);
+                }
+            }
+        `;
+        document.head.appendChild(style);
