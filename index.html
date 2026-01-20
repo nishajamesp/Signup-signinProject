@@ -10,31 +10,17 @@
 </head>
 <body>
     <div class="container">
-        <div class="todo-card">
-            <h1 class="app-title">
-                <i class="fas fa-check-circle"></i> My To-Do List
-            </h1>
+        <h1>Phone Directory</h1>
 
-            <div class="input-group">
-                <input 
-                    type="text" 
-                    id="taskInput" 
-                    class="form-control task-input" 
-                    placeholder="Enter a new task..."
-                    aria-label="Task input"
-                >
-                <button class="btn btn-add" id="addTaskBtn" type="button">
-                    <i class="fas fa-plus"></i> Add Task
-                </button>
-            </div>
+        <input type="text" id="search" placeholder="Search by name or phone">
 
-            <ul class="task-list" id="taskList">
-                <div class="empty-state">
-                    <i class="fas fa-clipboard-list"></i>
-                    <p>No tasks yet. Add one to get started!</p>
-                </div>
-            </ul>
-        </div>
+        <form id="phoneform">
+            <input type="text" id="name" placeholder="Student Name" required>
+            <input type="text" id="phone" placeholder="Phone Number" required>
+            <button type="submit">Add Contact</button>
+        </form>
+
+        <div id="phonelist"></div>
     </div>
     <script src="./js/script.js"></script>
 </body>

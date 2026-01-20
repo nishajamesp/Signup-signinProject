@@ -1,114 +1,108 @@
- 
-        const taskInput = document.getElementById('taskInput');
-        const addTaskBtn = document.getElementById('addTaskBtn');
-        const taskList = document.getElementById('taskList');
+const API_URL="https://69626ac4d9d64c761907d511.mockapi.io/PhoneBook";
 
-        // Function to create a new task item
-        function createTaskElement(taskText) {
-            const li = document.createElement('li');
-            li.className = 'task-item';
+let editId = "";
 
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.className = 'task-checkbox';
-            
-            const taskSpan = document.createElement('span');
-            taskSpan.className = 'task-text';
-            taskSpan.textContent = taskText;
-
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'btn-delete';
-            deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete';
-
-            checkbox.addEventListener('change', function() {
-                if (this.checked) {
-                    li.classList.add('completed');
-                    taskSpan.classList.add('completed');
-                } else {
-                    li.classList.remove('completed');
-                    taskSpan.classList.remove('completed');
-                }
-            });
+let form = document.getElementById("phoneform");
+let phoneList = document.getElementById("phonelist");
 
 
-            taskSpan.addEventListener('click', function() {
-                checkbox.checked = !checkbox.checked;
-                checkbox.dispatchEvent(new Event('change'));
-            });
+let nameinput = document.getElementById("name");
+let phoneinput = document.getElementById("phone");
+let searchinput = document.getElementById("search");
 
+async function getcontact(){
+    const res = await fetch(API_URL);
+    const phonelists = await res.json();
+    console.log(phonelists);
+    displayphonelists(phonelists);
+}
 
-            deleteBtn.addEventListener('click', function() {
-                li.style.animation = 'fadeOut 0.3s ease';
-                setTimeout(() => {
-                    li.remove();
-                    checkEmptyState();
-                }, 300);
-            });
+function displayphonelists(listing) {
+    phoneList.innerHTML = "";
 
+    listing.forEach(contact => {
+        phoneList.innerHTML += `
+            <div class="contact-row">
+                <span class="contact-name">${contact.name}</span>
+                <span class="contact-phone">${contact.phone}</span>
 
-            li.appendChild(checkbox);
-            li.appendChild(taskSpan);
-            li.appendChild(deleteBtn);
-
-            return li;
-        }
-
-        // Function to add a new task
-        function addTask() {
-            const taskText = taskInput.value.trim();
-
-            if (taskText === '') {
-                alert('Please enter a task!');
-                return;
-            }
-
-            const emptyState = taskList.querySelector('.empty-state');
-            if (emptyState) {
-                emptyState.remove();
-            }
-
-            const taskElement = createTaskElement(taskText);
-            taskList.appendChild(taskElement);
-
-
-            taskInput.value = '';
-            taskInput.focus();
-        }
-
-        // Function to check if list is empty and show empty state
-        function checkEmptyState() {
-            if (taskList.children.length === 0) {
-                const emptyDiv = document.createElement('div');
-                emptyDiv.className = 'empty-state';
-                emptyDiv.innerHTML = `
-                    <i class="fas fa-clipboard-list"></i>
-                    <p>No tasks yet. Add one to get started!</p>
-                `;
-                taskList.appendChild(emptyDiv);
-            }
-        }
-
-        // Event listener for Add Task button
-        addTaskBtn.addEventListener('click', addTask);
-
-        taskInput.addEventListener('keypress', function(event) {
-            if (event.key === 'Enter') {
-                addTask();
-            }
-        });
-
-        // Add fade out animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fadeOut {
-                from {
-                    opacity: 1;
-                    transform: translateX(0);
-                }
-                to {
-                    opacity: 0;
-                    transform: translateX(50px);
-                }
-            }
+                <div class="contact-actions">
+                    <button class="edit-btn" onclick="editcontact(${contact.id})">
+                        Edit
+                    </button>
+                    <button class="delete-btn" onclick="deletecontact(${contact.id})">
+                        Delete
+                    </button>
+                </div>
+            </div>
         `;
-        document.head.appendChild(style);
+    });
+}
+
+form.addEventListener('submit', async(e) =>{
+    e.preventDefault();
+
+    const phonedata = {
+        name:nameinput.value,
+        phone:phoneinput.value,
+    }
+
+    if(editId !== ""){
+        await fetch(`${API_URL}/${editId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(phonedata)
+        });
+        editId = "";
+        form.querySelector("button").innerText = 'Add contact';
+    }
+    else{
+    await fetch(API_URL,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(phonedata)
+    })
+}
+    form.reset()
+    getcontact();
+});
+
+async function deletecontact(id){
+    alert("id is : " + id);
+    await fetch(`${API_URL}/${id}`, {
+        method: "DELETE",
+    });
+    getcontact();
+}
+
+async function editcontact(id){
+     const response = await fetch(`${API_URL}/${id}`)
+     const phonelist = await response.json()
+
+     nameinput.value = phonelist.name;
+     phoneinput.value = phonelist.phone;
+
+     editId = id;
+     form.querySelector("button").innerText = 'Update contact';
+}
+
+searchinput.addEventListener('input', async function (){
+    const res = await fetch(API_URL)
+    const phonelists = await res.json()
+
+    let result = []
+    
+    for(let i=0; i<phonelists.length; i++){
+        const phonelist = phonelists[i]
+
+        if(phonelist.name.includes(searchinput.value)){
+            result.push(phonelist)
+        }
+        if(phonelist.phone.includes(searchinput.value)){
+            result.push(phonelist)
+        }
+        displayphonelists(result);
+    }
+})
+
+getcontact();
